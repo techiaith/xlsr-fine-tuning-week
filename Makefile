@@ -8,7 +8,7 @@ run:
 		 -it \
 		-v ${PWD}/homedir:/root \
 		-v ${PWD}/models:/models \
-		-v ${PWD}/python:/usr/src/python \
+		-v ${PWD}/python:/usr/src/xlsr-finetune \
 		techiaith/huggingface-xlsr-train-cy bash
 
 stop:

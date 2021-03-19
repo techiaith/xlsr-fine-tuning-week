@@ -151,9 +151,15 @@ def compute_metrics(pred):
 
 if __name__ == "__main__":
 
-    print ("\nLoading CommonVoice Welsh datasets")
-    common_voice_train = load_dataset("common_voice", "cy", split="train+validation")
-    common_voice_test = load_dataset("common_voice", "cy", split="test")
+    language = "tr"
+    model_name="wav2vec2-large-xlsr-turkish-demo"
+    output_dir="/models/%s" % model_name #wav2vec2-large-xlsr-welsh-demo"
+
+    print (language, model_name, output_dir) 
+
+    print ("\nLoading CommonVoice datasets")
+    common_voice_train = load_dataset("common_voice", language, split="train+validation")
+    common_voice_test = load_dataset("common_voice", language, split="test")
 
     print ("\nRemoving unnecessary columns")
     common_voice_train = common_voice_train.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
@@ -166,7 +172,7 @@ if __name__ == "__main__":
     #show_random_elements(common_voice_train.remove_columns(["path"]))
 
     #
-    print ("\nExtracting tokens and saving to vocab.json")
+    print ("\nExtracting tokens and saving to vocab.%s.json" % language)
     vocab_train = common_voice_train.map(extract_all_chars, batched=True, batch_size=-1, keep_in_memory=True, remove_columns=common_voice_train.column_names)
     vocab_test = common_voice_test.map(extract_all_chars, batched=True, batch_size=-1, keep_in_memory=True, remove_columns=common_voice_test.column_names)
 
@@ -181,18 +187,18 @@ if __name__ == "__main__":
     vocab_dict["[PAD]"] = len(vocab_dict)
     print(len(vocab_dict))
 
-    with open('vocab.json', 'w') as vocab_file:
+    with open('vocab.%s.json' % language, 'w') as vocab_file:
         json.dump(vocab_dict, vocab_file)
 
     print ("\nConstructing tokenizer")
-    tokenizer = Wav2Vec2CTCTokenizer("./vocab.json", unk_token="[UNK]", pad_token="[PAD]", word_delimiter_token="|")
+    tokenizer = Wav2Vec2CTCTokenizer("./vocab.%s.json" % language, unk_token="[UNK]", pad_token="[PAD]", word_delimiter_token="|")
 
     print ("\nFeature Extractor") 
     feature_extractor = Wav2Vec2FeatureExtractor(feature_size=1, sampling_rate=16000, padding_value=0.0, do_normalize=True, return_attention_mask=True)
 
     print ("\nConstructing Processor")
     processor = Wav2Vec2Processor(feature_extractor=feature_extractor, tokenizer=tokenizer)
-    processor.save_pretrained("/models/wav2vec2-large-xlsr-welsh-demo")
+    processor.save_pretrained(output_dir)
 
     print ("\nCreating array from speech files")
     common_voice_train = common_voice_train.map(speech_file_to_array_fn, remove_columns=common_voice_train.column_names)
@@ -227,7 +233,6 @@ if __name__ == "__main__":
 
     model.freeze_feature_extractor()
 
-    output_dir="/models/wav2vec2-large-xlsr-welsh-demo"
     training_args = TrainingArguments(
         output_dir=output_dir,
         group_by_length=True,
