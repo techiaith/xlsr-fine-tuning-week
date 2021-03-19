@@ -6,6 +6,7 @@ build:
 run: 
 	docker run --gpus all --name techiaith-huggingface-xlsr-train-cy \
 		 -it \
+		-v ${PWD}/homedir:/root \
 		-v ${PWD}/models:/models \
 		-v ${PWD}/python:/usr/src/python \
 		techiaith/huggingface-xlsr-train-cy bash
