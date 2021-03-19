@@ -1,0 +1,5 @@
+datasets==1.4.1
+transformers==4.4.0
+torchaudio
+librosa
+jiwer
