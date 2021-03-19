@@ -1,12 +1,22 @@
-#FROM nvidia/cuda:11.1-cudnn8-runtime-ubuntu18.04
-FROM nvidia/cuda:9.2-cudnn7-runtime-ubuntu18.04
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04
 
 LABEL maintainer="techiaith"
 LABEL repository="xlsr-cy"
 
-RUN apt-get update -q > docker-build.log 2>&1
-RUN apt-get install -y -qq bash build-essential git curl \
-    vim locales ca-certificates python3 python3-pip libsndfile1 >> docker-build.log 2>&1
+RUN apt-get update -q  \
+ && apt-get install -y -qq bash build-essential git curl \
+    vim locales ca-certificates python3 python3-pip libsndfile1 
+
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir \
+    jupyter \
+    tensorflow \
+    torch
+
+RUN git clone https://github.com/NVIDIA/apex
+RUN cd apex && \
+    python3 setup.py install && \
+    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
 # Set the locale
 RUN locale-gen cy_GB.UTF-8
