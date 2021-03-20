@@ -7,16 +7,12 @@ RUN apt-get update -q  \
  && apt-get install -y -qq bash build-essential git curl \
     vim locales ca-certificates python3 python3-pip libsndfile1 
 
-RUN python3 -m pip install --no-cache-dir --upgrade pip && \
-    python3 -m pip install --no-cache-dir \
-    jupyter \
-    tensorflow \
-    torch
+RUN python3 -m pip install --no-cache-dir --upgrade pip 
 
-RUN git clone https://github.com/NVIDIA/apex
-RUN cd apex && \
-    python3 setup.py install && \
-    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+#RUN git clone https://github.com/NVIDIA/apex
+#RUN cd apex && \
+#    python3 setup.py install && \
+#    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
 # Set the locale
 RUN locale-gen cy_GB.UTF-8

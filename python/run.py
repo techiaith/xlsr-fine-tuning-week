@@ -151,8 +151,8 @@ def compute_metrics(pred):
 
 if __name__ == "__main__":
 
-    language = "tr"
-    model_name="wav2vec2-large-xlsr-turkish-demo"
+    language = "cy"
+    model_name="wav2vec2-large-xlsr-welsh-demo"
     output_dir="/models/%s" % model_name #wav2vec2-large-xlsr-welsh-demo"
 
     print (language, model_name, output_dir) 
