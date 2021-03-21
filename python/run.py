@@ -265,23 +265,3 @@ if __name__ == "__main__":
 
     print ("\n\nModel trained. See %s" % output_dir)
 
-    #
-    #model = Wav2Vec2ForCTC.from_pretrained("/models/wav2vec2-large-xlsr-welsh-demo").to("cuda")
-    #processor = Wav2Vec2Processor.from_pretrained("/models/wav2vec2-large-xlsr-welsh-demo")
-
-    #input_dict = processor(common_voice_test["input_values"][0], return_tensors="pt", padding=True)
-
-    #logits = model(input_dict.input_values.to("cuda")).logits
-
-    #pred_ids = torch.argmax(logits, dim=-1)[0]
-
-    #common_voice_test_transcription = load_dataset("common_voice", "cy", data_dir="./cv-corpus-6.1-2020-12-11", split="test")
-    
-
-    #print("Prediction:")
-    #print(processor.decode(pred_ids))
-
-    #print("\nReference:")
-    #print(common_voice_test_transcription["sentence"][0].lower())
-
-
