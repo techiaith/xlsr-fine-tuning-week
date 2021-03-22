@@ -16,7 +16,8 @@ from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec
 
 
 #
-chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\\%\\\]'
+chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'
+#chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\\%\\\]'
 
 
 
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     common_voice_train = common_voice_train.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
     common_voice_test = common_voice_test.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
 
-    print ("\nRemoving unnecesary characters from sentences")
+    print ("\nRemoving unnecesary characters from sentences %s" % chars_to_ignore_regex)
     common_voice_train = common_voice_train.map(remove_special_characters)
     common_voice_test = common_voice_test.map(remove_special_characters)
 
