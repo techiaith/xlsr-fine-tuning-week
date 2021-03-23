@@ -1,7 +1,9 @@
 # xlsr-fine-tuning-week
-Cod cyd fynd a wythnos mireinio XLSR Facebook gyda HuggingFace ar gyfer y Gymraeg / Code for fine tuning Facebook XLSR models with HuggingFace for Welsh 
+Cod cyd fynd a wythnos mireinio model XLSR Facebook gyda HuggingFace ar gyfer y Gymraeg // *Code for fine tuning Facebook XLSR model with HuggingFace for Welsh.*
 
-# Sut i'w ddefnyddio...  // How to use...
+Gweler https://huggingface.co/DewiBrynJones/wav2vec2-large-xlsr-welsh ar gyfer model wedi'i hyfforddi eisoes. // *See https://huggingface.co/DewiBrynJones/wav2vec2-large-xlsr-welsh for a pre-trained model.*
+
+# Sut i'w ddefnyddio...  // *How to use...*
 
 `$ make`
 
@@ -9,15 +11,15 @@ Cod cyd fynd a wythnos mireinio XLSR Facebook gyda HuggingFace ar gyfer y Gymrae
 
 `root@bff0be8425ea:/usr/src/xlsr-finetune# python3 run.py`
 
-Yn dibynnu ar y cerdyn graffics, bydd yn gymryd rhai oriau i hyfforddi. // Depending on your graphics card, it will take some hours to train. 
+Yn dibynnu ar y cerdyn graffics, bydd yn gymryd rhai oriau i hyfforddi. // *Depending on your graphics card, it will take some hours to train.* 
 
-Ar GeForce RTX 2080, mae'n cymryd hyd at 13 awr // On a GeForce RTX 2080 it takes up to 13 hours. 
+Ar GeForce RTX 2080, mae'n cymryd hyd at 13 awr // *On a GeForce RTX 2080 it takes up to 13 hours.* 
 
 
 
-# Gwerthuso // Evaluation
+# Gwerthuso // *Evaluation*
 
-Yn ol set profi CommonVoice Cymraeg, mae gan y model Word Error Rate (WER) o 28.33%. // According to the Welsh CommonVoice test set, the model has a Word Error Rate (WER) of 28.33%
+Yn ol set profi CommonVoice Cymraeg, mae gan y model Word Error Rate (WER) o **27.21%**. // *According to the Welsh CommonVoice test set, the model has a Word Error Rate (WER) of **27.21%***
 
 ```
 root@bff0be8425ea:/usr/src/xlsr-finetune# python3 evaluate.py                                                                                                         /usr/local/lib/python3.6/dist-packages/torchaudio/backend/utils.py:54: UserWarning: "sox" backend is being deprecated. The default backend will be changed to "sox_io" backend in 0.8.0 and "sox" backend will be removed in 0.9.0. Please migrate to "sox_io" backend. Please refer to https://github.com/pytorch/audio/issues/903 for the detail.
