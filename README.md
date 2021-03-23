@@ -1,5 +1,6 @@
 # xlsr-fine-tuning-week
-Cod cyd fynd a wythnos mireinio model XLSR Facebook gyda HuggingFace ar gyfer y Gymraeg // *Code for fine tuning Facebook XLSR model with HuggingFace for Welsh.*
+
+Cod i cyd fynd a wythnos mireinio model XLSR Facebook gyda HuggingFace ar gyfer y Gymraeg // *Code for fine tuning Facebook XLSR model with HuggingFace for Welsh.*
 
 Gweler https://huggingface.co/DewiBrynJones/wav2vec2-large-xlsr-welsh ar gyfer model wedi'i hyfforddi eisoes. // *See https://huggingface.co/DewiBrynJones/wav2vec2-large-xlsr-welsh for a pre-trained model.*
 
