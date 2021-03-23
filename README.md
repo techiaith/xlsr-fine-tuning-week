@@ -41,7 +41,3 @@ Prediction: ['rhedais i ffwrdd heb ddweud dim wrthi ym beth digwyddodd', 'ac yr 
 Reference: ['Rhedais i ffwrdd heb ddweud dim wrthi am beth ddigwyddodd.', 'Ac yr oedd y ferch yn ofnus.']
 
 ```
-<<<<<<< HEAD
-=======
-
->>>>>>> master
