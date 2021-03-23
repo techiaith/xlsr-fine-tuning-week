@@ -11,7 +11,7 @@ processor = Wav2Vec2Processor.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr
 model = Wav2Vec2ForCTC.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr-welsh")
 model.to("cuda")
 
-chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\\%\\\]'
+chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 
 
