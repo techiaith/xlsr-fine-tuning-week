@@ -7,8 +7,10 @@ import re
 test_dataset = load_dataset("common_voice", "cy", split="test")
 wer = load_metric("wer")
 
-processor = Wav2Vec2Processor.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr-welsh")
-model = Wav2Vec2ForCTC.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr-welsh")
+#processor = Wav2Vec2Processor.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr-welsh")
+#model = Wav2Vec2ForCTC.from_pretrained("DewiBrynJones/wav2vec2-large-xlsr-welsh")
+processor = Wav2Vec2Processor.from_pretrained("/models/published/wav2vec2-large-xlsr-welsh")
+model = Wav2Vec2ForCTC.from_pretrained("/models/published/wav2vec2-large-xlsr-welsh")
 model.to("cuda")
 
 chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'

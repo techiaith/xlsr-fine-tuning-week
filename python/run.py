@@ -1,17 +1,19 @@
+import os
 import re
 import json
 import random
 import pandas as pd
 
-
 import torch
 import torchaudio
 import librosa
 import numpy as np
+import soundfile as sf
 
-from datasets import ClassLabel, load_dataset, load_metric
+from datasets import ClassLabel, load_dataset, load_metric, concatenate_datasets
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
+from audiomentations import Compose, AddGaussianNoise, Gain, PitchShift
 from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor, Wav2Vec2ForCTC, TrainingArguments, Trainer
 
 
@@ -121,6 +123,23 @@ def resample(batch):
     return batch
 
 
+augment = Compose([
+    AddGaussianNoise(min_amplitude=0.0001, max_amplitude=0.001, p=0.8),
+    PitchShift(min_semitones=-1, max_semitones=1, p=0.8),
+    Gain(min_gain_in_db=-6, max_gain_in_db=6, p=0.8)
+])
+
+
+def augmented_speech_file_to_array_fn(batch):
+    speech_array, sampling_rate = torchaudio.load(batch["path"])
+    batch["speech"] = speech_array[0].numpy()
+    batch["speech"] = librosa.resample(np.asarray(batch["speech"]), 48_000, 16_000)
+    batch["speech"] = augment(samples=batch["speech"], sample_rate=16_000)
+    batch["sampling_rate"] = 16_000
+    batch["target_text"] = batch["sentence"]
+    return batch
+
+
 def prepare_dataset(batch):
     # check that all files have the correct sampling rate
     assert (
@@ -150,6 +169,10 @@ def compute_metrics(pred):
     return {"wer": wer}
 
 
+
+
+
+
 if __name__ == "__main__":
 
     language = "cy"
@@ -160,14 +183,17 @@ if __name__ == "__main__":
 
     print ("\nLoading CommonVoice datasets")
     common_voice_train = load_dataset("common_voice", language, split="train+validation")
+    common_voice_train_augmented = load_dataset("common_voice", language, split="train+validation")
     common_voice_test = load_dataset("common_voice", language, split="test")
 
     print ("\nRemoving unnecessary columns")
     common_voice_train = common_voice_train.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
+    common_voice_train_augmented = common_voice_train_augmented.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
     common_voice_test = common_voice_test.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
 
     print ("\nRemoving unnecesary characters from sentences %s" % chars_to_ignore_regex)
     common_voice_train = common_voice_train.map(remove_special_characters)
+    common_voice_train_augmented = common_voice_train_augmented.map(remove_special_characters)
     common_voice_test = common_voice_test.map(remove_special_characters)
 
     #show_random_elements(common_voice_train.remove_columns(["path"]))
@@ -204,14 +230,23 @@ if __name__ == "__main__":
     print ("\nCreating array from speech files")
     common_voice_train = common_voice_train.map(speech_file_to_array_fn, remove_columns=common_voice_train.column_names)
     common_voice_test = common_voice_test.map(speech_file_to_array_fn, remove_columns=common_voice_test.column_names)
-
+    
     print ("\nDownsampling all speech files")
-    common_voice_train = common_voice_train.map(resample, num_proc=4)
-    common_voice_test = common_voice_test.map(resample, num_proc=4)
+    common_voice_train = common_voice_train.map(resample, num_proc=8)
+    common_voice_test = common_voice_test.map(resample, num_proc=8)
 
-    print ("\nPreparing the dataset")
-    common_voice_train = common_voice_train.map(prepare_dataset, remove_columns=common_voice_train.column_names, batch_size=8, num_proc=4, batched=True)
-    common_voice_test = common_voice_test.map(prepare_dataset, remove_columns=common_voice_test.column_names, batch_size=8, num_proc=4, batched=True)
+    print ("\nCreating augmented arrays from speech files")
+    common_voice_train_augmented = common_voice_train_augmented.map(augmented_speech_file_to_array_fn, remove_columns=common_voice_train_augmented.column_names)
+
+    print("\nMerging training and augmented sets")
+    common_voice_train = concatenate_datasets([common_voice_train, common_voice_train_augmented])
+
+    print ("\nPreparing the training dataset")
+    common_voice_train = common_voice_train.map(prepare_dataset, remove_columns=common_voice_train.column_names, batch_size=8, num_proc=8, batched=True)
+
+
+    print ("\nPreparing validation set")
+    common_voice_test = common_voice_test.map(prepare_dataset, remove_columns=common_voice_test.column_names, batch_size=8, num_proc=8, batched=True)
 
     print ("\nSetting up data collator")
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)

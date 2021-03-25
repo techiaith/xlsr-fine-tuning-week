@@ -17,5 +17,5 @@ stop:
 
 clean:
 	-docker rmi techiaith/huggingface-xlsr-train-cy
-	rm -rf homedir
+	sudo rm -rf homedir
 	mkdir -p homedir
