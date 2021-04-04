@@ -221,11 +221,12 @@ if __name__ == "__main__":
     print ("\nLoading pre-trained facebook/wav2vwc2-large-xlsr model")
     model = Wav2Vec2ForCTC.from_pretrained(
         "facebook/wav2vec2-large-xlsr-53", 
-        attention_dropout=0.1,
-        hidden_dropout=0.1,
-        feat_proj_dropout=0.0,
-        mask_time_prob=0.05,
-        layerdrop=0.1,
+        activation_dropout=0.055,
+        attention_dropout=0.094,
+        hidden_dropout=0.047,
+        feat_proj_dropout=0.04,
+        mask_time_prob=0.082,
+        layerdrop=0.041,
         gradient_checkpointing=True, 
         ctc_loss_reduction="mean", 
         pad_token_id=processor.tokenizer.pad_token_id,
@@ -245,7 +246,7 @@ if __name__ == "__main__":
         save_steps=400,
         eval_steps=400,
         logging_steps=400,
-        learning_rate=3e-4,
+        learning_rate=2.34e-4,
         warmup_steps=500,
         save_total_limit=2,
     )
