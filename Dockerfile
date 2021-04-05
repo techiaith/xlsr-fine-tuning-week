@@ -9,11 +9,6 @@ RUN apt-get update -q  \
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip 
 
-#RUN git clone https://github.com/NVIDIA/apex
-#RUN cd apex && \
-#    python3 setup.py install && \
-#    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
-
 # Set the locale
 RUN locale-gen cy_GB.UTF-8
 ENV LANG cy_GB.UTF-8

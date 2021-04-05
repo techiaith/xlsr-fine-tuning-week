@@ -14,8 +14,8 @@ from datasets import ClassLabel, load_dataset, load_metric, concatenate_datasets
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 #from audiomentations import Compose, AddGaussianNoise, Gain, PitchShift
-from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor, Wav2Vec2ForCTC, TrainingArguments, Trainer
 
+from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor, Wav2Vec2ForCTC, TrainingArguments, Trainer
 
 #
 chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'
@@ -43,8 +43,6 @@ def show_random_elements(dataset, num_examples=10):
 
     df = pd.DataFrame(dataset[picks])
     print (df.to_html())
-
-
 
 
 @dataclass
@@ -169,10 +167,6 @@ def compute_metrics(pred):
     return {"wer": wer}
 
 
-
-
-
-
 if __name__ == "__main__":
 
     language = "cy"
@@ -256,11 +250,12 @@ if __name__ == "__main__":
     print ("\nLoading pre-trained facebook/wav2vwc2-large-xlsr model")
     model = Wav2Vec2ForCTC.from_pretrained(
         "facebook/wav2vec2-large-xlsr-53", 
-        attention_dropout=0.1,
-        hidden_dropout=0.1,
-        feat_proj_dropout=0.0,
-        mask_time_prob=0.05,
-        layerdrop=0.1,
+        activation_dropout=0.055,
+        attention_dropout=0.094,
+        hidden_dropout=0.047,
+        feat_proj_dropout=0.04,
+        mask_time_prob=0.082,
+        layerdrop=0.041,
         gradient_checkpointing=True, 
         ctc_loss_reduction="mean", 
         pad_token_id=processor.tokenizer.pad_token_id,
@@ -280,7 +275,7 @@ if __name__ == "__main__":
         save_steps=400,
         eval_steps=400,
         logging_steps=400,
-        learning_rate=3e-4,
+        learning_rate=2.34e-4,
         warmup_steps=500,
         save_total_limit=2,
     )
@@ -300,24 +295,4 @@ if __name__ == "__main__":
     trainer.train()
 
     print ("\n\nModel trained. See %s" % output_dir)
-
-    #
-    #model = Wav2Vec2ForCTC.from_pretrained("/models/wav2vec2-large-xlsr-welsh-demo").to("cuda")
-    #processor = Wav2Vec2Processor.from_pretrained("/models/wav2vec2-large-xlsr-welsh-demo")
-
-    #input_dict = processor(common_voice_test["input_values"][0], return_tensors="pt", padding=True)
-
-    #logits = model(input_dict.input_values.to("cuda")).logits
-
-    #pred_ids = torch.argmax(logits, dim=-1)[0]
-
-    #common_voice_test_transcription = load_dataset("common_voice", "cy", data_dir="./cv-corpus-6.1-2020-12-11", split="test")
-    
-
-    #print("Prediction:")
-    #print(processor.decode(pred_ids))
-
-    #print("\nReference:")
-    #print(common_voice_test_transcription["sentence"][0].lower())
-
 

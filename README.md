@@ -27,9 +27,7 @@ root@bff0be8425ea:/usr/src/xlsr-finetune# python3 evaluate.py                   
   '"sox" backend is being deprecated. '
 Reusing dataset common_voice (/root/.cache/huggingface/datasets/common_voice/cy/6.1.0/0041e06ab061b91d0a23234a2221e87970a19cf3a81b20901474cffffeb7869f)
 Special tokens have been added in the vocabulary, make sure the associated word embedding are fine-tuned or trained.
-100%|| 4820/4820 [00:43<00:00, 110.91ex/s]100%|| 603/603 [05:01<00:00,  2.00ba/s]
-WER: 28.331609
-```
+WER: 25.31%
 
 ```
 root@bff0be8425ea:/usr/src/xlsr-finetune# python3 decode.py                                                                                                           /usr/local/lib/python3.6/dist-packages/torchaudio/backend/utils.py:54: UserWarning: "sox" backend is being deprecated. The default backend will be changed to "sox_io" backend in 0.8.0 and "sox" backend will be removed in 0.9.0. Please migrate to "sox_io" backend. Please refer to https://github.com/pytorch/audio/issues/903 for the detail.
@@ -42,4 +40,3 @@ Prediction: ['rhedais i ffwrdd heb ddweud dim wrthi ym beth digwyddodd', 'ac yr 
 Reference: ['Rhedais i ffwrdd heb ddweud dim wrthi am beth ddigwyddodd.', 'Ac yr oedd y ferch yn ofnus.']
 
 ```
-
