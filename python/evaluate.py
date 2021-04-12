@@ -13,7 +13,7 @@ processor = Wav2Vec2Processor.from_pretrained("/models/published/wav2vec2-large-
 model = Wav2Vec2ForCTC.from_pretrained("/models/published/wav2vec2-large-xlsr-welsh")
 model.to("cuda")
 
-chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'
+chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\u00AC\;\:\"\\%\\\]'
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 
 
@@ -21,6 +21,8 @@ resampler = torchaudio.transforms.Resample(48_000, 16_000)
 # We need to read the aduio files as arrays
 def speech_file_to_array_fn(batch):
     batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower()
+    batch["sentence"] = batch["sentence"].replace('\u2018',"'")
+    batch["sentence"] = batch["sentence"].replace('ñ',"n")
     speech_array, sampling_rate = torchaudio.load(batch["path"])
     batch["speech"] = resampler(speech_array).squeeze().numpy()
     return batch

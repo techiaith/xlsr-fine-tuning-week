@@ -18,13 +18,14 @@ from typing import Any, Dict, List, Optional, Union
 from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor, Wav2Vec2ForCTC, TrainingArguments, Trainer
 
 #
-chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\;\:\"\\%\\\]'
+chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\u00AC\;\:\"\\%\\\]'
 #chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\\%\\\]'
-
 
 
 def remove_special_characters(batch):
     batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
+    batch["sentence"] = batch["sentence"].replace('\u2018',"'")
+    batch["sentence"] = batch["sentence"].replace('ñ',"n")
     return batch
 
 def extract_all_chars(batch):
@@ -249,9 +250,9 @@ if __name__ == "__main__":
 
     print ("\nLoading pre-trained facebook/wav2vwc2-large-xlsr model")
     model = Wav2Vec2ForCTC.from_pretrained(
-        "facebook/wav2vec2-large-xlsr-53", 
+        "facebook/wav2vec2-large-xlsr-53",
         activation_dropout=0.055,
-        attention_dropout=0.094,
+        attention_dropout=0.055,
         hidden_dropout=0.047,
         feat_proj_dropout=0.04,
         mask_time_prob=0.082,
@@ -270,12 +271,12 @@ if __name__ == "__main__":
         per_device_train_batch_size=16,
         gradient_accumulation_steps=2,
         evaluation_strategy="steps",
-        num_train_epochs=30,
+        num_train_epochs=35,
         fp16=True,
         save_steps=400,
         eval_steps=400,
         logging_steps=400,
-        learning_rate=2.34e-4,
+        learning_rate=3e-4,
         warmup_steps=500,
         save_total_limit=2,
     )
