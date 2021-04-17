@@ -2,7 +2,7 @@ import torch
 import torchaudio
 from datasets import load_dataset, load_metric
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
-import re
+import text_preprocess
 
 test_dataset = load_dataset("common_voice", "cy", split="test")
 wer = load_metric("wer")
@@ -13,16 +13,13 @@ processor = Wav2Vec2Processor.from_pretrained("/models/published/wav2vec2-large-
 model = Wav2Vec2ForCTC.from_pretrained("/models/published/wav2vec2-large-xlsr-welsh")
 model.to("cuda")
 
-chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\u00AC\;\:\"\\%\\\]'
 resampler = torchaudio.transforms.Resample(48_000, 16_000)
 
 
 # Preprocessing the datasets.
 # We need to read the aduio files as arrays
 def speech_file_to_array_fn(batch):
-    batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower()
-    batch["sentence"] = batch["sentence"].replace('\u2018',"'")
-    batch["sentence"] = batch["sentence"].replace('ñ',"n")
+    batch["sentence"] = text_preprocess.cleanup(batch["sentence"]) + " "
     speech_array, sampling_rate = torchaudio.load(batch["path"])
     batch["speech"] = resampler(speech_array).squeeze().numpy()
     return batch

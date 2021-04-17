@@ -1,5 +1,4 @@
 import os
-import re
 import json
 import random
 import pandas as pd
@@ -10,22 +9,20 @@ import librosa
 import numpy as np
 import soundfile as sf
 
-from datasets import ClassLabel, load_dataset, load_metric, concatenate_datasets
+from datasets import Dataset, ClassLabel, load_dataset, load_metric, concatenate_datasets
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 #from audiomentations import Compose, AddGaussianNoise, Gain, PitchShift
 
 from transformers import Wav2Vec2CTCTokenizer, Wav2Vec2FeatureExtractor, Wav2Vec2Processor, Wav2Vec2ForCTC, TrainingArguments, Trainer
 
+import text_preprocess
+
 #
-chars_to_ignore_regex = '[\,\?\.\!\-\u2013\u2014\u00AC\;\:\"\\%\\\]'
-#chars_to_ignore_regex = '[\,\?\.\!\-\;\:\"\\%\\\]'
 
 
 def remove_special_characters(batch):
-    batch["sentence"] = re.sub(chars_to_ignore_regex, '', batch["sentence"]).lower() + " "
-    batch["sentence"] = batch["sentence"].replace('\u2018',"'")
-    batch["sentence"] = batch["sentence"].replace('ñ',"n")
+    batch["sentence"] = text_preprocess.cleanup(batch["sentence"]) + " "
     return batch
 
 def extract_all_chars(batch):
@@ -177,21 +174,27 @@ if __name__ == "__main__":
     print (language, model_name, output_dir) 
 
     print ("\nLoading CommonVoice datasets")
-    common_voice_train = load_dataset("common_voice", language, split="train+validation")
-    #common_voice_train_augmented = load_dataset("common_voice", language, split="train+validation")
-    common_voice_test = load_dataset("common_voice", language, split="test")
+    #common_voice_train = load_dataset("common_voice", language, split="train+validation")
+    common_voice_validated=load_dataset('custom_common_voice.py', 'cy', split='validated')
+    common_voice_test = load_dataset("custom_common_voice", language, split="test")
 
     print ("\nRemoving unnecessary columns")
-    common_voice_train = common_voice_train.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
-    #common_voice_train_augmented = common_voice_train_augmented.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
+    common_voice_validated = common_voice_validated.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
     common_voice_test = common_voice_test.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "segment", "up_votes"])
 
-    print ("\nRemoving unnecesary characters from sentences %s" % chars_to_ignore_regex)
-    common_voice_train = common_voice_train.map(remove_special_characters)
-    #common_voice_train_augmented = common_voice_train_augmented.map(remove_special_characters)
-    common_voice_test = common_voice_test.map(remove_special_characters)
+    df_validated=common_voice_validated.to_pandas()
+    df_test=common_voice_test.to_pandas()
+    test_sentences=df_test['sentence'].tolist()
 
-    #show_random_elements(common_voice_train.remove_columns(["path"]))
+    df_train=df_validated[~df_validated['sentence'].isin(test_sentences)]
+    df_train=df_train.set_index('path')
+
+    common_voice_train=Dataset.from_pandas(df_train)
+
+
+    print ("\nRemoving unnecesary characters from sentences ")
+    common_voice_train = common_voice_train.map(remove_special_characters)
+    common_voice_test = common_voice_test.map(remove_special_characters)
 
     #
     print ("\nExtracting tokens and saving to vocab.%s.json" % language)
@@ -208,6 +211,7 @@ if __name__ == "__main__":
     vocab_dict["[UNK]"] = len(vocab_dict)
     vocab_dict["[PAD]"] = len(vocab_dict)
     print(len(vocab_dict))
+    print(vocab_dict)
 
     with open('vocab.%s.json' % language, 'w') as vocab_file:
         json.dump(vocab_dict, vocab_file)
@@ -227,8 +231,8 @@ if __name__ == "__main__":
     common_voice_test = common_voice_test.map(speech_file_to_array_fn, remove_columns=common_voice_test.column_names)
     
     print ("\nDownsampling all speech files")
-    common_voice_train = common_voice_train.map(resample, num_proc=8)
-    common_voice_test = common_voice_test.map(resample, num_proc=8)
+    common_voice_train = common_voice_train.map(resample)
+    common_voice_test = common_voice_test.map(resample)
 
     #print ("\nCreating augmented arrays from speech files")
     #common_voice_train_augmented = common_voice_train_augmented.map(augmented_speech_file_to_array_fn, remove_columns=common_voice_train_augmented.column_names)
@@ -237,11 +241,10 @@ if __name__ == "__main__":
     #common_voice_train = concatenate_datasets([common_voice_train, common_voice_train_augmented])
 
     print ("\nPreparing the training dataset")
-    common_voice_train = common_voice_train.map(prepare_dataset, remove_columns=common_voice_train.column_names, batch_size=8, num_proc=8, batched=True)
-
+    common_voice_train = common_voice_train.map(prepare_dataset, remove_columns=common_voice_train.column_names, batch_size=8, batched=True)
 
     print ("\nPreparing validation set")
-    common_voice_test = common_voice_test.map(prepare_dataset, remove_columns=common_voice_test.column_names, batch_size=8, num_proc=8, batched=True)
+    common_voice_test = common_voice_test.map(prepare_dataset, remove_columns=common_voice_test.column_names, batch_size=8, batched=True)
 
     print ("\nSetting up data collator")
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
@@ -249,6 +252,7 @@ if __name__ == "__main__":
     wer_metric = load_metric("wer")
 
     print ("\nLoading pre-trained facebook/wav2vwc2-large-xlsr model")
+    # see https://huggingface.co/transformers/model_doc/wav2vec2.html?highlight=mask_time_prob#transformers.Wav2Vec2Config
     model = Wav2Vec2ForCTC.from_pretrained(
         "facebook/wav2vec2-large-xlsr-53",
         activation_dropout=0.055,
@@ -265,19 +269,22 @@ if __name__ == "__main__":
 
     model.freeze_feature_extractor()
 
+    # see https://huggingface.co/transformers/main_classes/trainer.html?highlight=group_by_length#transformers.TrainingArguments
     training_args = TrainingArguments(
         output_dir=output_dir,
         group_by_length=True,
         per_device_train_batch_size=16,
         gradient_accumulation_steps=2,
         evaluation_strategy="steps",
-        num_train_epochs=35,
-        fp16=True,
+        num_train_epochs=30,
+        #load_best_model_at_end=True, 
+        #metric_for_best_model="eval_wer",
         save_steps=400,
         eval_steps=400,
         logging_steps=400,
         learning_rate=3e-4,
-        warmup_steps=500,
+        #lr_scheduler_type="cosine",
+        warmup_steps=400,
         save_total_limit=2,
     )
 
