@@ -15,6 +15,11 @@ ENV LANG cy_GB.UTF-8
 ENV LANGUAGE cy_GB:en
 ENV LC_ALL cy_GB.UTF-8
 
+# gosod py-ctc-decoder
+RUN git clone https://github.com/ynop/py-ctc-decode.git /tmp/py-ctc-decode \
+ && cd /tmp/py-ctc-decode \
+ && python3 setup.py install
+
 RUN mkdir -p /usr/src/xlsr-finetune
 WORKDIR /usr/src/xlsr-finetune
 
