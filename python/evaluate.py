@@ -33,7 +33,7 @@ with open(vocab_file_path, 'r', encoding='utf-8') as vocab_file:
     vocab[space_ix]=' '
     vocab[padding_ix]='_'
 
-kenlm_scorer=ctcdecode.WordKenLMScorer('/models/kenlm/lm_filtered.arpa', alpha=2.5, beta=0)
+kenlm_scorer=ctcdecode.WordKenLMScorer('/models/kenlm/lm_filtered.arpa', alpha=4.5, beta=0)
 ctcdecoder=ctcdecode.BeamSearchDecoder(vocab,
                         num_workers=4,
                         beam_width=12,
@@ -54,8 +54,6 @@ def speech_file_to_array_fn(batch):
 test_dataset = test_dataset.map(speech_file_to_array_fn)
 
 
-# Preprocessing the datasets.
-# We need to read the aduio files as arrays
 def evaluate(batch):
     inputs = processor(batch["speech"], sampling_rate=16_000, return_tensors="pt", padding=True)
     
@@ -64,34 +62,20 @@ def evaluate(batch):
 
     pred_ids = torch.argmax(logits, dim=-1)
     batch["pred_strings"] = processor.batch_decode(pred_ids)
-    return batch
-
-
-def evaluate_with_lm(batch):
-    inputs = processor(batch["speech"], sampling_rate=16_000, return_tensors="pt", padding=True)
-
-    with torch.no_grad():
-       logits = model(inputs.input_values.to("cuda"), attention_mask=inputs.attention_mask.to("cuda")).logits
 
     c,x,y = logits.size()
-
     decoded=list()
     for i in range(0,c):
         ctc = torch.softmax(logits[i], dim=-1).cpu().detach().numpy()
         ctc = np.log(ctc)
         decoded.append(ctcdecoder.decode(ctc))
-    
-    batch["pred_strings"] = decoded
-    return batch
+        batch["pred_strings_with_lm"] = decoded
 
+    return batch
 
 
 
 result = test_dataset.map(evaluate, batched=True, batch_size=8)
 print("WER: {:2f}".format(100 * wer.compute(predictions=result["pred_strings"], references=result["sentence"])))
-
-
-lm_result = test_dataset.map(evaluate_with_lm, batched=True, batch_size=8)
-print("WER with LM: {:2f}".format(100 * wer.compute(predictions=lm_result["pred_strings"], references=lm_result["sentence"])))
-
+print("WER with LM: {:2f}".format(100 * wer.compute(predictions=result["pred_strings_with_lm"], references=result["sentence"])))
 
