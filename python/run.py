@@ -119,23 +119,6 @@ def resample(batch):
     return batch
 
 
-#augment = Compose([
-#    AddGaussianNoise(min_amplitude=0.0001, max_amplitude=0.001, p=0.8),
-#    PitchShift(min_semitones=-1, max_semitones=1, p=0.8),
-#    Gain(min_gain_in_db=-6, max_gain_in_db=6, p=0.8)
-#])
-
-
-#def augmented_speech_file_to_array_fn(batch):
-#    speech_array, sampling_rate = torchaudio.load(batch["path"])
-#    batch["speech"] = speech_array[0].numpy()
-#    batch["speech"] = librosa.resample(np.asarray(batch["speech"]), 48_000, 16_000)
-#    batch["speech"] = augment(samples=batch["speech"], sample_rate=16_000)
-#    batch["sampling_rate"] = 16_000
-#    batch["target_text"] = batch["sentence"]
-#    return batch
-
-
 def prepare_dataset(batch):
     # check that all files have the correct sampling rate
     assert (
@@ -233,12 +216,6 @@ if __name__ == "__main__":
     print ("\nDownsampling all speech files")
     common_voice_train = common_voice_train.map(resample)
     common_voice_test = common_voice_test.map(resample)
-
-    #print ("\nCreating augmented arrays from speech files")
-    #common_voice_train_augmented = common_voice_train_augmented.map(augmented_speech_file_to_array_fn, remove_columns=common_voice_train_augmented.column_names)
-
-    #print("\nMerging training and augmented sets")
-    #common_voice_train = concatenate_datasets([common_voice_train, common_voice_train_augmented])
 
     print ("\nPreparing the training dataset")
     common_voice_train = common_voice_train.map(prepare_dataset, remove_columns=common_voice_train.column_names, batch_size=8, batched=True)
