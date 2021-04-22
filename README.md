@@ -20,14 +20,21 @@ Ar GeForce RTX 2080, mae'n cymryd hyd at 13 awr // *On a GeForce RTX 2080 it tak
 
 # Gwerthuso // *Evaluation*
 
-Yn ol set profi CommonVoice Cymraeg, mae gan y model Word Error Rate (WER) o **27.21%**. // *According to the Welsh CommonVoice test set, the model has a Word Error Rate (WER) of **27.21%***
+Yn ol set profi CommonVoice Cymraeg, mae gan y model Word Error Rate (WER) o **25.31%**. // *According to the Welsh CommonVoice test set, the model has a Word Error Rate (WER) of **25.31%***.
 
 ```
-root@bff0be8425ea:/usr/src/xlsr-finetune# python3 evaluate.py                                                                                                         /usr/local/lib/python3.6/dist-packages/torchaudio/backend/utils.py:54: UserWarning: "sox" backend is being deprecated. The default backend will be changed to "sox_io" backend in 0.8.0 and "sox" backend will be removed in 0.9.0. Please migrate to "sox_io" backend. Please refer to https://github.com/pytorch/audio/issues/903 for the detail.
-  '"sox" backend is being deprecated. '
+root@26215fd43562:/usr/src/xlsr-finetune# python3 evaluate.py
 Reusing dataset common_voice (/root/.cache/huggingface/datasets/common_voice/cy/6.1.0/0041e06ab061b91d0a23234a2221e87970a19cf3a81b20901474cffffeb7869f)
-Special tokens have been added in the vocabulary, make sure the associated word embedding are fine-tuned or trained.
-WER: 25.31%
+Loading the LM will be faster if you build a binary file.
+Reading /models/kenlm/lm_filtered.arpa
+----5---10---15---20---25---30---35---40---45---50---55---60---65---70---75---80---85---90---95--100
+****************************************************************************************************
+found 1gram
+found 2gram
+Loading cached processed dataset at /root/.cache/huggingface/datasets/common_voice/cy/6.1.0/0041e06ab061b91d0a23234a2221e87970a19cf3a81b20901474cffffeb7869f/cache-7bc763ec5b45ddb8.arrow
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 603/603 [08:35<00:00,  1.17ba/s]
+WER: 25.315298
+WER with LM: 22.783297
 ```
 
 ```
