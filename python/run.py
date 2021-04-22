@@ -157,8 +157,12 @@ if __name__ == "__main__":
     print (language, model_name, output_dir) 
 
     print ("\nLoading CommonVoice datasets")
-    #common_voice_train = load_dataset("common_voice", language, split="train+validation")
-    common_voice_validated=load_dataset('custom_common_voice.py', 'cy', split='validated')
+    # CV 6.1 (cy) training+dev set provides approximately 16 hours of unique sentence recordings.
+    common_voice_train = load_dataset("common_voice", language, split="train+validation")
+    # or use an alternative training set - all validated Common Voice recordings minus recordings of sentences
+    # present in the test set. (in CV 6.1 this is about 24 hours with some sentences having been recorded multiple
+    # times by multiple speakers.)
+    #common_voice_validated=load_dataset('custom_common_voice.py', 'cy', split='validated')
     common_voice_test = load_dataset("custom_common_voice", language, split="test")
 
     print ("\nRemoving unnecessary columns")
